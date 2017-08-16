@@ -36,6 +36,7 @@
             this.tbMessageContent = new DevComponents.DotNetBar.Controls.TextBoxX();
             this.tbDisplaySender = new DevComponents.DotNetBar.Controls.TextBoxX();
             this.labelX6 = new DevComponents.DotNetBar.LabelX();
+            this.panel1 = new System.Windows.Forms.Panel();
             this.SuspendLayout();
             // 
             // btnExit
@@ -45,7 +46,7 @@
             this.btnExit.AutoSize = true;
             this.btnExit.BackColor = System.Drawing.Color.Transparent;
             this.btnExit.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
-            this.btnExit.Location = new System.Drawing.Point(493, 291);
+            this.btnExit.Location = new System.Drawing.Point(463, 639);
             this.btnExit.Name = "btnExit";
             this.btnExit.Size = new System.Drawing.Size(75, 25);
             this.btnExit.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
@@ -61,7 +62,7 @@
             this.btnSend.BackColor = System.Drawing.Color.Transparent;
             this.btnSend.ColorTable = DevComponents.DotNetBar.eButtonColor.OrangeWithBackground;
             this.btnSend.Enabled = false;
-            this.btnSend.Location = new System.Drawing.Point(412, 291);
+            this.btnSend.Location = new System.Drawing.Point(382, 639);
             this.btnSend.Name = "btnSend";
             this.btnSend.Size = new System.Drawing.Size(75, 25);
             this.btnSend.Style = DevComponents.DotNetBar.eDotNetBarStyle.StyleManagerControlled;
@@ -80,7 +81,7 @@
             this.tbTitle.Border.CornerType = DevComponents.DotNetBar.eCornerType.Square;
             this.tbTitle.Location = new System.Drawing.Point(92, 41);
             this.tbTitle.Name = "tbTitle";
-            this.tbTitle.Size = new System.Drawing.Size(475, 25);
+            this.tbTitle.Size = new System.Drawing.Size(447, 25);
             this.tbTitle.TabIndex = 14;
             this.tbTitle.TextChanged += new System.EventHandler(this.verifyInput);
             // 
@@ -115,24 +116,26 @@
             // 
             // tbMessageContent
             // 
-            this.tbMessageContent.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbMessageContent.Anchor = System.Windows.Forms.AnchorStyles.None;
             // 
             // 
             // 
             this.tbMessageContent.Border.Class = "TextBoxBorder";
             this.tbMessageContent.Border.CornerType = DevComponents.DotNetBar.eCornerType.Square;
-            this.tbMessageContent.Location = new System.Drawing.Point(93, 72);
+            this.tbMessageContent.Enabled = false;
+            this.tbMessageContent.Location = new System.Drawing.Point(12, 99);
             this.tbMessageContent.Multiline = true;
             this.tbMessageContent.Name = "tbMessageContent";
             this.tbMessageContent.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.tbMessageContent.Size = new System.Drawing.Size(475, 213);
+            this.tbMessageContent.Size = new System.Drawing.Size(55, 39);
             this.tbMessageContent.TabIndex = 16;
+            this.tbMessageContent.Visible = false;
             this.tbMessageContent.TextChanged += new System.EventHandler(this.verifyInput);
             // 
             // tbDisplaySender
             // 
+            this.tbDisplaySender.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             // 
             // 
             // 
@@ -140,7 +143,7 @@
             this.tbDisplaySender.Border.CornerType = DevComponents.DotNetBar.eCornerType.Square;
             this.tbDisplaySender.Location = new System.Drawing.Point(93, 10);
             this.tbDisplaySender.Name = "tbDisplaySender";
-            this.tbDisplaySender.Size = new System.Drawing.Size(475, 25);
+            this.tbDisplaySender.Size = new System.Drawing.Size(446, 25);
             this.tbDisplaySender.TabIndex = 18;
             this.tbDisplaySender.TextChanged += new System.EventHandler(this.verifyInput);
             // 
@@ -159,11 +162,20 @@
             this.labelX6.TabIndex = 17;
             this.labelX6.Text = "發送單位：";
             // 
+            // panel1
+            // 
+            this.panel1.BackColor = System.Drawing.Color.Transparent;
+            this.panel1.Location = new System.Drawing.Point(93, 72);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(445, 561);
+            this.panel1.TabIndex = 19;
+            // 
             // PostNotice
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(580, 328);
+            this.ClientSize = new System.Drawing.Size(552, 676);
+            this.Controls.Add(this.panel1);
             this.Controls.Add(this.tbDisplaySender);
             this.Controls.Add(this.labelX6);
             this.Controls.Add(this.tbTitle);
@@ -173,8 +185,12 @@
             this.Controls.Add(this.btnExit);
             this.Controls.Add(this.btnSend);
             this.DoubleBuffered = true;
+            this.MaximumSize = new System.Drawing.Size(568, 715);
+            this.MinimumSize = new System.Drawing.Size(568, 715);
             this.Name = "PostNotice";
             this.Text = "發送公告";
+            this.Load += new System.EventHandler(this.PostNotice_Load);
+            this.Shown += new System.EventHandler(this.PostNotice_Shown);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -190,5 +206,6 @@
         private DevComponents.DotNetBar.Controls.TextBoxX tbMessageContent;
         private DevComponents.DotNetBar.Controls.TextBoxX tbDisplaySender;
         private DevComponents.DotNetBar.LabelX labelX6;
+        private System.Windows.Forms.Panel panel1;
     }
 }
