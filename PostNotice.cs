@@ -23,6 +23,9 @@ namespace _1campus.notice.v17
         public PostNotice(PostNotice.Type type)
         {
             _Type = type;
+
+          
+
             InitializeComponent();
         }
 
@@ -30,7 +33,35 @@ namespace _1campus.notice.v17
         ChromiumWebBrowser _myBrowser;
 
         private void PostNotice_Load(object sender, EventArgs e)
-        {
+        {     
+            // 2017/11/13 穎驊應恩正要求，加入傳送給家長、學生 選項，如果是老師模式，則將兩按鈕關閉
+            if (_Type == Type.Teacher)
+            {
+
+                labelX2.Visible = false;
+                checkBoxX1.Visible = false;
+                checkBoxX2.Visible = false;
+
+                labelX2.Enabled = false;
+                checkBoxX1.Enabled = false;
+                checkBoxX2.Enabled = false;
+                Point p1 = new Point();
+
+                p1.X = 12;
+                p1.Y = 78;
+
+                labelX4.Location = p1;
+
+                Point p2 = new Point();
+
+                p2.X = 93;
+                p2.Y = 78;
+
+                panel1.Location = p2;
+
+                panel1.Height += 34;
+            }
+
             //// 避免連續兩次Cef.Initialize() 會當機
             //if (!Cef.IsInitialized)
             //{
@@ -144,13 +175,23 @@ namespace _1campus.notice.v17
                                 {
                                     //StudentVisible
                                     var ele = doc.CreateElement("StudentVisible");
-                                    ele.InnerText = "true";
+
+                                    //ele.InnerText = "true";
+
+                                    // 學生_依使用者選項發送
+                                    ele.InnerText = checkBoxX1.Checked? "true": "false";
+
                                     root.AppendChild(ele);
                                 }
                                 {
                                     //ParentVisible
                                     var ele = doc.CreateElement("ParentVisible");
-                                    ele.InnerText = "true";
+
+                                    //ele.InnerText = "true";
+
+                                    // 家長_依使用者選項發送
+                                    ele.InnerText = checkBoxX2.Checked? "true": "false";
+
                                     root.AppendChild(ele);
                                 }
                                 foreach (string each in K12.Presentation.NLDPanels.Student.SelectedSource)
@@ -200,6 +241,28 @@ namespace _1campus.notice.v17
         private void PostNotice_Shown(object sender, EventArgs e)
         {
 
+        }
+
+        private void checkBoxX1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!checkBoxX1.Checked)
+            {
+                if (!checkBoxX2.Checked)
+                {
+                    checkBoxX1.Checked = true;
+                }
+            }            
+        }
+
+        private void checkBoxX2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!checkBoxX2.Checked)
+            {
+                if (!checkBoxX1.Checked)
+                {
+                    checkBoxX2.Checked = true;
+                }
+            }
         }
     }
 }
