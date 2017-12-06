@@ -98,8 +98,10 @@ namespace _1campus.notice.v17
 
         private void btnExit_Click(object sender, EventArgs e)
         {
+            // 2017/12/6 穎驊與曜明討論後，將此Shutdown 註解掉，原因是 若在此Shutdown 後，ischool 本體再也沒機會 initiate chrome，
+            //若之後再點取功能將會當機， 目前將 initiate/Shutdown 都放置 FISCA 統一在ischool 主程式開啟/關閉 時管理
             //關閉
-            Cef.Shutdown();
+            //Cef.Shutdown();
 
             this.Close();
         }
