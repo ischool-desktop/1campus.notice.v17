@@ -23,9 +23,7 @@ namespace _1campus.notice.v17
         public PostNotice(PostNotice.Type type)
         {
             _Type = type;
-
           
-
             InitializeComponent();
         }
 
@@ -181,7 +179,7 @@ namespace _1campus.notice.v17
                                     //ele.InnerText = "true";
 
                                     // 學生_依使用者選項發送
-                                    ele.InnerText = checkBoxX1.Checked? "true": "false";
+                                    ele.InnerText = checkBoxX1.Checked ? "true" : "false";
 
                                     root.AppendChild(ele);
                                 }
@@ -192,7 +190,7 @@ namespace _1campus.notice.v17
                                     //ele.InnerText = "true";
 
                                     // 家長_依使用者選項發送
-                                    ele.InnerText = checkBoxX2.Checked? "true": "false";
+                                    ele.InnerText = checkBoxX2.Checked ? "true" : "false";
 
                                     root.AppendChild(ele);
                                 }
@@ -230,6 +228,14 @@ namespace _1campus.notice.v17
                             FISCA.Presentation.Controls.MsgBox.Show("請輸入訊息內容!!");
                         }
                     }
+                    else
+                    {
+                        FISCA.Presentation.Controls.MsgBox.Show("task is not successful");
+                    }
+                }
+                else
+                {
+                    FISCA.Presentation.Controls.MsgBox.Show("task IsFaulted");
                 }
             }, TaskScheduler.FromCurrentSynchronizationContext());           
         }
