@@ -218,7 +218,7 @@ namespace _1campus.notice.v17
                             FISCA.DSAClient.XmlHelper xmlHelper = new FISCA.DSAClient.XmlHelper(root);
                             var conn = new FISCA.DSAClient.Connection();
                             conn.Connect(FISCA.Authentication.DSAServices.AccessPoint, "1campus.notice.admin.v17", FISCA.Authentication.DSAServices.PassportToken);
-                            conn.SendRequest("PostNotice", xmlHelper);
+                            var resp = conn.SendRequest("PostNotice", xmlHelper);
 
                             FISCA.Presentation.Controls.MsgBox.Show("發送成功");
                             this.Close();
