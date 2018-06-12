@@ -39,6 +39,7 @@
             this.checkBoxX1 = new DevComponents.DotNetBar.Controls.CheckBoxX();
             this.checkBoxX2 = new DevComponents.DotNetBar.Controls.CheckBoxX();
             this.labelX2 = new DevComponents.DotNetBar.LabelX();
+            this.textBoxX1 = new DevComponents.DotNetBar.Controls.TextBoxX();
             this.SuspendLayout();
             // 
             // btnExit
@@ -154,10 +155,11 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.BackColor = System.Drawing.Color.Transparent;
-            this.panel1.Location = new System.Drawing.Point(93, 112);
+            this.panel1.Location = new System.Drawing.Point(12, 243);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(504, 158);
+            this.panel1.Size = new System.Drawing.Size(54, 58);
             this.panel1.TabIndex = 4;
+            this.panel1.Visible = false;
             // 
             // checkBoxX1
             // 
@@ -213,11 +215,28 @@
             this.labelX2.TabIndex = 22;
             this.labelX2.Text = "接收對象：";
             // 
+            // textBoxX1
+            // 
+            this.textBoxX1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            // 
+            // 
+            // 
+            this.textBoxX1.Border.Class = "TextBoxBorder";
+            this.textBoxX1.Border.CornerType = DevComponents.DotNetBar.eCornerType.Square;
+            this.textBoxX1.Location = new System.Drawing.Point(92, 110);
+            this.textBoxX1.Multiline = true;
+            this.textBoxX1.Name = "textBoxX1";
+            this.textBoxX1.Size = new System.Drawing.Size(506, 160);
+            this.textBoxX1.TabIndex = 23;
+            // 
             // PostNotice
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 17F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(611, 313);
+            this.Controls.Add(this.textBoxX1);
             this.Controls.Add(this.labelX2);
             this.Controls.Add(this.checkBoxX2);
             this.Controls.Add(this.checkBoxX1);
@@ -253,5 +272,6 @@
         private DevComponents.DotNetBar.Controls.CheckBoxX checkBoxX1;
         private DevComponents.DotNetBar.Controls.CheckBoxX checkBoxX2;
         private DevComponents.DotNetBar.LabelX labelX2;
+        private DevComponents.DotNetBar.Controls.TextBoxX textBoxX1;
     }
 }
