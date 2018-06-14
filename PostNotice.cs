@@ -12,23 +12,173 @@ using CefSharp.WinForms;
 using System.Threading.Tasks;
 using System.Reflection;
 using System.IO;
+using System.Xml;
 
 namespace _1campus.notice.v17
 {
     public partial class PostNotice : FISCA.Presentation.Controls.BaseForm
     {
+        private BackgroundWorker _backgroundWorker;
+
         public enum Type { Student, Teacher }
         private Type _Type { get; set; }
+        private string msgTitle; //發送標題
+        private string displaySender; //發送單位
+        private string msgText; //發送內容
 
         public PostNotice(PostNotice.Type type)
         {
             _Type = type;
-          
+
             InitializeComponent();
+
+            _backgroundWorker = new BackgroundWorker();
+            _backgroundWorker.DoWork += new DoWorkEventHandler(_backgroundWorker_DoWork);
+            //_backgroundWorker.ProgressChanged += new ProgressChangedEventHandler(_backgroundWorker_ProgressChanged);
+            _backgroundWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(_backgroundWorker_RunWorkerCompleted);
+            //_backgroundWorker.WorkerReportsProgress = true;
+
         }
 
         //2017/8/14 穎驊新增 CefSharp 架構
         ChromiumWebBrowser _myBrowser;
+
+        private void _backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            List<string> targetTotalIDList = new List<string>();
+
+            if (_Type == Type.Student)
+            {
+                targetTotalIDList = K12.Presentation.NLDPanels.Student.SelectedSource;
+            }
+
+            if (_Type == Type.Teacher)
+            {
+                targetTotalIDList = K12.Presentation.NLDPanels.Teacher.SelectedSource;
+            }
+
+            int pages = 0; // 看可以分成幾批
+            if (targetTotalIDList.Count <= 100) // 100 人 切一份
+            {
+                pages = 1;
+            }                
+            try
+            {
+                pages = Convert.ToInt32(Math.Ceiling(Convert.ToDecimal(targetTotalIDList.Count) / Convert.ToDecimal(100)));
+            }
+            catch (System.Exception ex)
+            {
+                pages = 0;
+            }
+           
+            for (int i = 0; i < pages; i++)
+            {
+                Console.WriteLine("執行到" + i + 1 + "分批");
+                List<string> tempList = (List<string>) targetTotalIDList.Skip(i * 100).Take(100).ToList();
+                if (tempList != null)
+                {
+                    BatchPushNotice(tempList);
+                }                    
+            }
+            
+        }
+
+        private void _backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            FISCA.Presentation.Controls.MsgBox.Show("發送成功");
+            this.Close();
+        }
+
+        private void BatchPushNotice(List<string> targetIDList)
+        {
+            //必須要使用greening帳號登入才能用
+            System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
+            XmlElement root = doc.CreateElement("Request");
+
+            //標題
+            var eleTitle = doc.CreateElement("Title");
+            eleTitle.InnerText = msgTitle;
+            root.AppendChild(eleTitle);
+            //發送人員
+            var eleDisplaySender = doc.CreateElement("DisplaySender");
+            eleDisplaySender.InnerText = displaySender;
+            root.AppendChild(eleDisplaySender);
+
+            string webContentText = "";
+
+            //訊息內容
+            //var eleMessage = doc.CreateElement("Message");
+            //eleMessage.InnerText = tbMessageContent.Text;
+            //root.AppendChild(eleMessage);
+
+            //訊息內容
+
+            var eleMessage = doc.CreateElement("Message");
+            eleMessage.InnerText = msgText;
+            root.AppendChild(eleMessage);
+
+            //選取學生
+            if (_Type == Type.Student)
+            {
+                {
+                    //StudentVisible
+                    var ele = doc.CreateElement("StudentVisible");
+
+                    //ele.InnerText = "true";
+
+                    // 學生_依使用者選項發送
+                    ele.InnerText = checkBoxX1.Checked ? "true" : "false";
+
+                    root.AppendChild(ele);
+                }
+                {
+                    //ParentVisible
+                    var ele = doc.CreateElement("ParentVisible");
+
+                    //ele.InnerText = "true";
+
+                    // 家長_依使用者選項發送
+                    ele.InnerText = checkBoxX2.Checked ? "true" : "false";
+
+                    root.AppendChild(ele);
+                }
+                foreach (string each in targetIDList)
+                {
+                    //發送對象
+                    var eleTargetStudent = doc.CreateElement("TargetStudent");
+                    eleTargetStudent.InnerText = each;
+                    root.AppendChild(eleTargetStudent);
+                }
+            }
+            //選取教師
+            if (_Type == Type.Teacher)
+            {
+                foreach (string each in targetIDList)
+                {
+                    //發送對象
+                    var eleTarget = doc.CreateElement("TargetTeacher");
+                    eleTarget.InnerText = each;
+                    root.AppendChild(eleTarget);
+                }
+            }
+
+            //送出
+            try
+            {
+                FISCA.DSAClient.XmlHelper xmlHelper = new FISCA.DSAClient.XmlHelper(root);
+                var conn = new FISCA.DSAClient.Connection();
+                conn.Connect(FISCA.Authentication.DSAServices.AccessPoint, "1campus.notice.admin.v17", FISCA.Authentication.DSAServices.PassportToken);
+                var resp = conn.SendRequest("PostNotice", xmlHelper);
+            }
+            catch
+            {
+                Console.WriteLine("對象系統編號:" + string.Join(",", targetIDList) + "。發送失敗");
+                //FISCA.Presentation.Controls.MsgBox.Show("對象系統編號:" + string.Join(",", targetIDList) +"。發送失敗");
+            }
+
+        }
+
+
 
         private void PostNotice_Load(object sender, EventArgs e)
         {     
@@ -120,86 +270,12 @@ namespace _1campus.notice.v17
             //    <TargetStudent>17736</TargetStudent>
             //    </Request>
 
-            //必須要使用greening帳號登入才能用
-            System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
-            var root = doc.CreateElement("Request");
+            // 2018/6/13 穎驊註解，與俊傑測試 僑泰發送(5000人)， 發現人太多會發送不出去，在此建立背景執行序，以100人一包 分批上傳。
+            msgTitle = tbTitle.Text;
+            displaySender = tbDisplaySender.Text;
+            msgText = textBoxX1.Text;
 
-            //發送者名稱
-            var eleTitle = doc.CreateElement("Title");
-            eleTitle.InnerText = tbTitle.Text;
-            root.AppendChild(eleTitle);
-            //發送人員
-            var eleDisplaySender = doc.CreateElement("DisplaySender");
-            eleDisplaySender.InnerText = tbDisplaySender.Text;
-            root.AppendChild(eleDisplaySender);
-
-            string webContentText = "";
-
-            //訊息內容
-            //var eleMessage = doc.CreateElement("Message");
-            //eleMessage.InnerText = tbMessageContent.Text;
-            //root.AppendChild(eleMessage);
-
-            //訊息內容
-
-            var eleMessage = doc.CreateElement("Message");
-            eleMessage.InnerText = textBoxX1.Text;
-            root.AppendChild(eleMessage);
-
-            //選取學生
-            if (_Type == Type.Student)
-            {
-                {
-                    //StudentVisible
-                    var ele = doc.CreateElement("StudentVisible");
-
-                    //ele.InnerText = "true";
-
-                    // 學生_依使用者選項發送
-                    ele.InnerText = checkBoxX1.Checked ? "true" : "false";
-
-                    root.AppendChild(ele);
-                }
-                {
-                    //ParentVisible
-                    var ele = doc.CreateElement("ParentVisible");
-
-                    //ele.InnerText = "true";
-
-                    // 家長_依使用者選項發送
-                    ele.InnerText = checkBoxX2.Checked ? "true" : "false";
-
-                    root.AppendChild(ele);
-                }
-                foreach (string each in K12.Presentation.NLDPanels.Student.SelectedSource)
-                {
-                    //發送對象
-                    var eleTargetStudent = doc.CreateElement("TargetStudent");
-                    eleTargetStudent.InnerText = each;
-                    root.AppendChild(eleTargetStudent);
-                }
-            }
-            //選取教師
-            if (_Type == Type.Teacher)
-            {
-                foreach (string each in K12.Presentation.NLDPanels.Teacher.SelectedSource)
-                {
-                    //發送對象
-                    var eleTarget = doc.CreateElement("TargetTeacher");
-                    eleTarget.InnerText = each;
-                    root.AppendChild(eleTarget);
-                }
-            }
-
-            //送出
-            FISCA.DSAClient.XmlHelper xmlHelper = new FISCA.DSAClient.XmlHelper(root);
-            var conn = new FISCA.DSAClient.Connection();
-            conn.Connect(FISCA.Authentication.DSAServices.AccessPoint, "1campus.notice.admin.v17", FISCA.Authentication.DSAServices.PassportToken);
-            var resp = conn.SendRequest("PostNotice", xmlHelper);
-
-            FISCA.Presentation.Controls.MsgBox.Show("發送成功");
-            this.Close();
-
+            _backgroundWorker.RunWorkerAsync();
 
             // 2018/6/12 穎驊註解，恩正說 將原本使用的 cef 弄掉，傳送內容不再用原本的html，直接用textBox 傳內碼
             //// 一定要傳參數，就算空的也沒關係
