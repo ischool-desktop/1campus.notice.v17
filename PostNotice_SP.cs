@@ -17,7 +17,12 @@ using FISCA.Presentation.Controls;
 
 namespace _1campus.notice.v17
 {
-    public partial class PostNotice : FISCA.Presentation.Controls.BaseForm
+
+    /// <summary>
+    /// 本功能提供個案式的使用者
+    /// 可以發送HTML格式內容
+    /// </summary>
+    public partial class PostNotice_SP : FISCA.Presentation.Controls.BaseForm
     {
         private BackgroundWorker _backgroundWorker;
 
@@ -25,13 +30,15 @@ namespace _1campus.notice.v17
         private Type _Type { get; set; }
         private string msgTitle; //發送標題
         private string displaySender; //發送單位
-
-        ChromiumWebBrowser _myBrowser;
         private string webContentText; //發送內容
 
+        List<string> postList { get; set; }
         TaskScheduler ts { get; set; }
 
-        List<string> postList { get; set; }
+        private MessageLogRecord _Record { get; set; }
+
+        //2017/8/14 穎驊新增 CefSharp 架構
+        ChromiumWebBrowser _myBrowser;
 
         List<string> userLimitList { get; set; }
         List<string> userNameList { get; set; }
@@ -41,7 +48,10 @@ namespace _1campus.notice.v17
         string IsCheckX1 = "false";
         string IsCheckX2 = "false";
 
-        public PostNotice(PostNotice.Type type)
+        /// <summary>
+        /// 由主畫面開啟
+        /// </summary>
+        public PostNotice_SP(PostNotice_SP.Type type)
         {
             _Type = type;
 
@@ -53,11 +63,31 @@ namespace _1campus.notice.v17
 
         }
 
+        /// <summary>
+        /// 2018/5/29 - Dylan 新增再發送的功能效果
+        /// </summary>
+        public PostNotice_SP(PostNotice_SP.Type type, MessageLogRecord record)
+        {
+            _Type = type;
+            _Record = record;
+
+            InitializeComponent();
+
+            _backgroundWorker = new BackgroundWorker();
+            _backgroundWorker.DoWork += new DoWorkEventHandler(_backgroundWorker_DoWork);
+            _backgroundWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(_backgroundWorker_RunWorkerCompleted);
+
+        }
+
+        /// <summary>
+        /// Load
+        /// </summary>
         private void PostNotice_Load(object sender, EventArgs e)
         {
             // 2017/11/13 穎驊應恩正要求，加入傳送給家長、學生 選項，如果是老師模式，則將兩按鈕關閉
             if (_Type == Type.Teacher)
             {
+
                 labelX2.Visible = false;
                 checkBoxX1.Visible = false;
                 checkBoxX2.Visible = false;
@@ -70,48 +100,56 @@ namespace _1campus.notice.v17
             //取得目前的專案dll檔的 絕對路徑(若在使用者端 就會抓絕對的使用者電腦路徑)
             FileInfo projectDllURL = new FileInfo(Assembly.GetExecutingAssembly().CodeBase.Replace("file:///", ""));
             //取得html 相對路徑
-            string htmlRelativeURL = Path.Combine(projectDllURL.DirectoryName, "Redactor\\indexwhi.html");
+            string htmlRelativeURL = Path.Combine(projectDllURL.DirectoryName, "Redactor\\index.html");
 
+            //2017/8/15 穎驊註解， 下面為穎驊的開發機 Html 的絕對位子，在開發測試完畢後，將使用相對路徑 找到html 檔案
+            //ChromiumWebBrowser myBrowser = new ChromiumWebBrowser(@"C:\Users\ED\Documents\ischool_github\1campus.notice.v17\HTMLResouces\html\content.html");
             ChromiumWebBrowser myBrowser = new ChromiumWebBrowser(htmlRelativeURL);
+
+            //ChromiumWebBrowser myBrowser = new ChromiumWebBrowser(@"http://www.maps.google.com");
             _myBrowser = myBrowser;
+
+            if (_Record != null)
+            {
+                comboBoxEx1.Text = _Record.display_sender;
+                tbTitle.Text = _Record.title;
+                _myBrowser.LoadHtml(_Record.message, "http://www.ischool.com.tw/1campus-app.html");
+                checkBoxX1.Checked = _Record.parent_visible == "true" ? true : false;
+                checkBoxX2.Checked = _Record.student_visible == "true" ? true : false;
+            }
+
 
             this.panel1.Controls.Add(myBrowser);
         }
 
+        /// <summary>
+        /// 開始發送
+        /// </summary>
         private void btnSend_Click(object sender, EventArgs e)
         {
-            if (!_backgroundWorker.IsBusy)
+            if (this.comboBoxEx1.Text == "" || this.tbTitle.Text == "")
             {
-                if (this.comboBoxEx1.Text == "" || this.tbTitle.Text == "")
-                {
-                    MsgBox.Show("請輸入標題/單位");
-                    return;
-                }
-
-                //    <Request>
-                //    <Title>鄭明典：今日發展是關鍵</Title>
-                //    <DisplaySender>芝儀</DisplaySender>
-                //    <Message>鄭明典今（25）日上午於臉書上指出，目前在菲律賓東方海面上有一熱帶性低氣壓，是否會再增強須看今日發展狀況。</Message>
-                //    <Category>教務</Category>
-                //    <TargetStudent>17736</TargetStudent>
-                //    </Request>
-
-                // 2018/6/13 穎驊註解，與俊傑測試 僑泰發送(5000人)， 發現人太多會發送不出去，在此建立背景執行序，以100人一包 分批上傳。
-                msgTitle = tbTitle.Text;
-                displaySender = comboBoxEx1.Text;
-                ts = TaskScheduler.FromCurrentSynchronizationContext();
-
-                IsCheckX1 = checkBoxX1.Checked ? "true" : "false";
-                IsCheckX2 = checkBoxX2.Checked ? "true" : "false";
-
-
-                _backgroundWorker.RunWorkerAsync();
-
+                MsgBox.Show("請輸入標題/單位");
+                return;
             }
-            else
-            {
-                MsgBox.Show("系統忙碌中");
-            }
+            //    <Request>
+            //    <Title>鄭明典：今日發展是關鍵</Title>
+            //    <DisplaySender>芝儀</DisplaySender>
+            //    <Message>鄭明典今（25）日上午於臉書上指出，目前在菲律賓東方海面上有一熱帶性低氣壓，是否會再增強須看今日發展狀況。</Message>
+            //    <Category>教務</Category>
+            //    <TargetStudent>17736</TargetStudent>
+            //    </Request>
+
+            // 2018/6/13 穎驊註解，與俊傑測試 僑泰發送(5000人)， 發現人太多會發送不出去，在此建立背景執行序，以100人一包 分批上傳。
+            msgTitle = tbTitle.Text;
+            displaySender = comboBoxEx1.Text;
+            ts = TaskScheduler.FromCurrentSynchronizationContext();
+
+            //依使用者選項發送
+            IsCheckX1 = checkBoxX1.Checked ? "true" : "false";
+            IsCheckX2 = checkBoxX2.Checked ? "true" : "false";
+
+            _backgroundWorker.RunWorkerAsync();
 
         }
 
@@ -124,6 +162,7 @@ namespace _1campus.notice.v17
             if (_Type == Type.Student)
             {
                 targetTotalIDList = K12.Presentation.NLDPanels.Student.SelectedSource;
+
                 DataTable dt = tool._Q.Select(string.Format("select id,name from student where id in ('{0}')", string.Join("','", targetTotalIDList)));
 
                 int x = 0;
@@ -147,6 +186,7 @@ namespace _1campus.notice.v17
             else if (_Type == Type.Teacher)
             {
                 targetTotalIDList = K12.Presentation.NLDPanels.Teacher.SelectedSource;
+
                 DataTable dt = tool._Q.Select(string.Format("select id,teacher_name from teacher where id in ('{0}')", string.Join("','", targetTotalIDList)));
 
                 int x = 0;
@@ -167,7 +207,6 @@ namespace _1campus.notice.v17
             }
 
             BatchPushNotice(targetTotalIDList);
-
         }
 
         private void BatchPushNotice(List<string> targetIDList)
@@ -339,6 +378,17 @@ namespace _1campus.notice.v17
             //Cef.Shutdown();
 
             this.Close();
+        }
+
+        // 若想要呼叫 Chrome 的開法者工具視窗，可以呼叫此方法。
+        private void ShowDevTools()
+        {
+            _myBrowser.ShowDevTools();
+        }
+
+        private void PostNotice_Shown(object sender, EventArgs e)
+        {
+
         }
 
         private void checkBoxX1_CheckedChanged(object sender, EventArgs e)

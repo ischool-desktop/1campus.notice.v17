@@ -1,0 +1,23 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Redactor</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <!-- redactor.css -->
+    <link rel="stylesheet" href="redactor.min.css" />
+</head>
+<body>
+    <div>
+        <textarea id="content" name="content"></textarea>
+    </div>
+    <script src="redactor.min.js"></script>
+    <script src="mainCtrl.js"></script>
+    <script>
+        $R('#content', { 
+            toolbar: false, 
+            autoparse: false
+        });
+    </script>
+</body>
+</html>

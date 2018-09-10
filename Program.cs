@@ -6,6 +6,8 @@ using System.IO;
 using System.Reflection;
 using CefSharp;
 using CefSharp.WinForms;
+using FISCA.Permission;
+using FISCA.Authentication;
 
 namespace _1campus.notice.v17
 {
@@ -41,19 +43,26 @@ namespace _1campus.notice.v17
             //Environment.SetEnvironmentVariable("PATH", path, EnvironmentVariableTarget.Process); 
             #endregion
             {
-                K12.Presentation.NLDPanels.Student.RibbonBarItems["公告"]["發送公告"].Image = Properties.Resources.speech_balloon_64;
-                K12.Presentation.NLDPanels.Student.RibbonBarItems["公告"]["發送公告"].Size = FISCA.Presentation.RibbonBarButton.MenuButtonSize.Large;
-                K12.Presentation.NLDPanels.Student.RibbonBarItems["公告"]["發送公告"].Enable = false;
+                K12.Presentation.NLDPanels.Student.RibbonBarItems["智慧簡訊"]["發送智慧簡訊"].Image = Properties.Resources.speech_balloon_64;
+                K12.Presentation.NLDPanels.Student.RibbonBarItems["智慧簡訊"]["發送智慧簡訊"].Size = FISCA.Presentation.RibbonBarButton.MenuButtonSize.Large;
+                K12.Presentation.NLDPanels.Student.RibbonBarItems["智慧簡訊"]["發送智慧簡訊"].Enable = false;
                 K12.Presentation.NLDPanels.Student.SelectedSourceChanged += delegate
                 {
-                    K12.Presentation.NLDPanels.Student.RibbonBarItems["公告"]["發送公告"].Enable = K12.Presentation.NLDPanels.Student.SelectedSource.Count > 0;
+                    K12.Presentation.NLDPanels.Student.RibbonBarItems["智慧簡訊"]["發送智慧簡訊"].Enable = K12.Presentation.NLDPanels.Student.SelectedSource.Count > 0 && Permissions.發送學生智慧簡訊權限;
                 };
-                K12.Presentation.NLDPanels.Student.RibbonBarItems["公告"]["發送公告"].Click += delegate
+                K12.Presentation.NLDPanels.Student.RibbonBarItems["智慧簡訊"]["發送智慧簡訊"].Click += delegate
                 {
                     //必須要使用greening帳號登入才能用
-                    if (FISCA.Authentication.DSAServices.AccountType == FISCA.Authentication.AccountType.Greening)
+                    if (DSAServices.AccountType == AccountType.Greening)
                     {
-                        new PostNotice(PostNotice.Type.Student).ShowDialog();
+                        if ((Control.ModifierKeys & Keys.Shift) == Keys.Shift)
+                        {
+                            new PostNotice_SP(PostNotice_SP.Type.Student).ShowDialog();
+                        }
+                        else
+                        {
+                            new PostNotice(PostNotice.Type.Student).ShowDialog();
+                        }
                     }
                     else
                     {
@@ -62,27 +71,89 @@ namespace _1campus.notice.v17
                 };
             }
             {
-                K12.Presentation.NLDPanels.Teacher.RibbonBarItems["公告"]["發送公告"].Image = Properties.Resources.speech_balloon_64;
-                K12.Presentation.NLDPanels.Teacher.RibbonBarItems["公告"]["發送公告"].Size = FISCA.Presentation.RibbonBarButton.MenuButtonSize.Large;
-                K12.Presentation.NLDPanels.Teacher.RibbonBarItems["公告"]["發送公告"].Enable = false;
+                K12.Presentation.NLDPanels.Teacher.RibbonBarItems["智慧簡訊"]["發送智慧簡訊"].Image = Properties.Resources.speech_balloon_64;
+                K12.Presentation.NLDPanels.Teacher.RibbonBarItems["智慧簡訊"]["發送智慧簡訊"].Size = FISCA.Presentation.RibbonBarButton.MenuButtonSize.Large;
+                K12.Presentation.NLDPanels.Teacher.RibbonBarItems["智慧簡訊"]["發送智慧簡訊"].Enable = false;
                 K12.Presentation.NLDPanels.Teacher.SelectedSourceChanged += delegate
                 {
-                    K12.Presentation.NLDPanels.Teacher.RibbonBarItems["公告"]["發送公告"].Enable = K12.Presentation.NLDPanels.Teacher.SelectedSource.Count > 0;
+                    K12.Presentation.NLDPanels.Teacher.RibbonBarItems["智慧簡訊"]["發送智慧簡訊"].Enable = K12.Presentation.NLDPanels.Teacher.SelectedSource.Count > 0 && Permissions.發送老師智慧簡訊權限;
                 };
-                K12.Presentation.NLDPanels.Teacher.RibbonBarItems["公告"]["發送公告"].Click += delegate
+                K12.Presentation.NLDPanels.Teacher.RibbonBarItems["智慧簡訊"]["發送智慧簡訊"].Click += delegate
                 {
                     //必須要使用greening帳號登入才能用
                     if (FISCA.Authentication.DSAServices.AccountType == FISCA.Authentication.AccountType.Greening)
                     {
-                        new PostNotice(PostNotice.Type.Teacher).ShowDialog();
+                        if ((Control.ModifierKeys & Keys.Shift) == Keys.Shift)
+                        {
+                            new PostNotice_SP(PostNotice_SP.Type.Teacher).ShowDialog();
+                        }
+                        else
+                        {
+                            new PostNotice(PostNotice.Type.Teacher).ShowDialog();
+                        }
                     }
                     else
                     {
                         FISCA.Presentation.Controls.MsgBox.Show("必須是Greening帳號方可使用本功能");
                     }
                 };
-            }  
+
+                //K12.Presentation.NLDPanels.Student.RibbonBarItems["智慧簡訊"]["智慧簡訊歷程"].Image = Properties.Resources.book_zoom_64;
+                //K12.Presentation.NLDPanels.Student.RibbonBarItems["智慧簡訊"]["智慧簡訊歷程"].Size = FISCA.Presentation.RibbonBarButton.MenuButtonSize.Medium;
+                //K12.Presentation.NLDPanels.Student.RibbonBarItems["智慧簡訊"]["智慧簡訊歷程"].Enable = Permissions.學生公告歷程權限;
+                //K12.Presentation.NLDPanels.Student.RibbonBarItems["智慧簡訊"]["智慧簡訊歷程"].Click += delegate
+                //{
+                //    new StudentLogView().ShowDialog();
+
+
+                //};
+
+                //K12.Presentation.NLDPanels.Teacher.RibbonBarItems["智慧簡訊"]["智慧簡訊歷程"].Image = Properties.Resources.book_zoom_64;
+                //K12.Presentation.NLDPanels.Teacher.RibbonBarItems["智慧簡訊"]["智慧簡訊歷程"].Size = FISCA.Presentation.RibbonBarButton.MenuButtonSize.Medium;
+                //K12.Presentation.NLDPanels.Teacher.RibbonBarItems["智慧簡訊"]["智慧簡訊歷程"].Enable = Permissions.教師公告歷程權限;
+                //K12.Presentation.NLDPanels.Teacher.RibbonBarItems["智慧簡訊"]["智慧簡訊歷程"].Click += delegate
+                //{
+                //    new TeacherLogView().ShowDialog();
+                //};
+            }
+
+            //====================================
+
+            FISCA.Presentation.MotherForm.StartMenu["智慧簡訊歷程"].Image = Properties.Resources.folder_refresh_64;
+            FISCA.Presentation.MotherForm.StartMenu["智慧簡訊歷程"]["學校發給「學生」歷程"].Enable = Permissions.學校發給學生歷程權限;
+            FISCA.Presentation.MotherForm.StartMenu["智慧簡訊歷程"]["學校發給「學生」歷程"].Click += delegate
+            {
+                new StudentLogView().ShowDialog();
+
+            };
+
+            FISCA.Presentation.MotherForm.StartMenu["智慧簡訊歷程"]["學校發給「教師」歷程"].Enable = Permissions.學校發給教師歷程權限;
+            FISCA.Presentation.MotherForm.StartMenu["智慧簡訊歷程"]["學校發給「教師」歷程"].Click += delegate
+            {
+                new TeacherLogView().ShowDialog();
+
+            };
+
+            FISCA.Presentation.MotherForm.StartMenu["智慧簡訊歷程"]["教師發給「學生」歷程"].Enable = Permissions.教師發給學生歷程權限;
+            FISCA.Presentation.MotherForm.StartMenu["智慧簡訊歷程"]["教師發給「學生」歷程"].Click += delegate
+            {
+                MessageTeacherUsage mtu = new MessageTeacherUsage();
+                mtu.ShowDialog();
+
+            };
+
+            //權限管理
+            RoleAclSource.Instance["學生"]["智慧簡訊"].Add(new RibbonFeature(Permissions.發送學生智慧簡訊, "發送學生智慧簡訊"));
+            RoleAclSource.Instance["教師"]["智慧簡訊"].Add(new RibbonFeature(Permissions.發送老師智慧簡訊, "發送老師智慧簡訊"));
+            RoleAclSource.Instance["系統"]["智慧簡訊歷程"].Add(new RibbonFeature(Permissions.學校發給學生歷程, "學校發給學生歷程"));
+            RoleAclSource.Instance["系統"]["智慧簡訊歷程"].Add(new RibbonFeature(Permissions.學校發給教師歷程, "學校發給教師歷程"));
+            RoleAclSource.Instance["系統"]["智慧簡訊歷程"].Add(new RibbonFeature(Permissions.教師發給學生歷程, "教師發給學生歷程"));
+
         }
-        
+
+        private static void Program_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
